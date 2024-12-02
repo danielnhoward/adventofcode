@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd "$(dirname "$0")/haskell"
+
+YEAR=$1
+DAY=$2
+
+runghc "Year$YEAR/Day$DAY.hs"
