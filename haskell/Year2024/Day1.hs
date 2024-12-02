@@ -1,6 +1,7 @@
 module Year2024.Day1 where
 
-import Utils (run)
+import Utils.Read (readInt)
+import Utils.Run (run)
 
 import Data.List (sort)
 import Control.Functor.HT (mapFst)
@@ -13,9 +14,6 @@ partA = sum . map (abs . uncurry (-)) . uncurry zip . sortPair . procInput
 
 readLine :: String -> (Int, Int)
 readLine = (\[n1, n2] -> (n1, n2)) . map readInt . words
-
-readInt :: String -> Int
-readInt = read
 
 sortPair :: Ord a => ([a], [a]) -> ([a], [a])
 sortPair (xs, ys) = (sort xs, sort ys)

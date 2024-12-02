@@ -1,4 +1,4 @@
-module Utils (runSingle, run) where
+module Utils.Run (runSingle, run) where
 
 type PartF a = Show a => String -> a
 type Year = Int
