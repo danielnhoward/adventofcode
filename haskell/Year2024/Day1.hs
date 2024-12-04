@@ -29,5 +29,4 @@ count :: Eq a => a -> [a] -> Int
 count x = length . filter (x ==)
 
 main :: IO ()
-main = do
-  run partA partB 2024 1
+main = run partA partB 2024 1

@@ -25,5 +25,4 @@ getSubLists :: [Int] -> [[Int]]
 getSubLists xs = filter ((length xs - 1 <=) . length) (subLists xs)
 
 main :: IO ()
-main = do
-  run partA partB 2024 2
+main = run partA partB 2024 2

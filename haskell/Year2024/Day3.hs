@@ -38,5 +38,4 @@ getValidPartsInverse s = getValidParts rhs
   where (_, _, rhs) = s =~ doRegex :: (String, String, String)
 
 main :: IO ()
-main = do
-  run partA partB 2024 3
+main = run partA partB 2024 3
