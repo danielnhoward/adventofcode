@@ -9,6 +9,7 @@ module Utils.List (
   getDiagonals,
   removeFirst,
   insertValue,
+  getIndex,
 ) where
 
 import Data.List (transpose)
@@ -57,3 +58,11 @@ removeFirst xs x = prefix ++ drop 1 suffix
 insertValue :: [a] -> Int -> a -> [a]
 insertValue xs 0 y = y : xs
 insertValue (x : xs) n y = x : insertValue xs (n - 1) y
+
+getIndex :: (a -> Bool) -> [a] -> Int
+getIndex f = go 0
+  where
+    go _ [] = -1
+    go n (x : xs)
+      | f x = n
+      | otherwise = go (n + 1) xs

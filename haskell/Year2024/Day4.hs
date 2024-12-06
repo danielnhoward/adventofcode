@@ -1,8 +1,9 @@
 module Year2024.Day4 where
 
-import Data.Char (toLower)
 import Utils.List (getVertical, getDiagonals)
 import Utils.Run (run)
+
+import Data.Char (toLower)
 
 partA :: String -> Int
 partA = sum . map countXmas . getParts . procInput

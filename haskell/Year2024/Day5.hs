@@ -1,9 +1,10 @@
 module Year2024.Day5 where
 
-import Data.List.Split (splitOn)
 import Utils.Read (readInt)
 import Utils.List (pairs, removeFirst, insertValue)
 import Utils.Run (run)
+
+import Data.List.Split (splitOn)
 
 partA :: String -> Int
 partA = sum . map middleValue . getOrderedRules
