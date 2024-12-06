@@ -5,14 +5,19 @@ import Utils.Run (run)
 
 import Data.List (nub)
 import Data.Set (Set, empty, member, insert)
+import Data.Array (Array, array, assocs, (!), bounds)
 
 data Cell = Empty | Obstruction | Guard deriving (Eq, Show)
+type Grid = Array (Int, Int) Cell
 
-partA :: String -> Int
-partA = nMoves . runMovesVariation moves
+withIndex :: [a] -> [(Int, a)]
+withIndex = zip [0..]
 
-procInput :: String -> [[Cell]]
-procInput = map (map procCell) . lines
+procInput :: String -> Grid
+procInput s = array ((0,0), (length (head ls) - 1, length ls - 1))
+  [((x, y), procCell c) | (y, row) <- withIndex ls, (x, c) <- withIndex row]
+  where
+    ls = lines s
 
 procCell :: Char -> Cell
 procCell '.' = Empty
@@ -22,11 +27,8 @@ procCell '>' = Guard
 procCell 'v' = Guard
 procCell '<' = Guard
 
-getGuardCoordinates :: [[Cell]] -> (Int, Int)
-getGuardCoordinates grid = (x, y)
-  where
-    y = getIndex (elem Guard) grid
-    x = getIndex (== Guard) (grid !! y)
+getGuardCoordinates :: Grid -> (Int, Int)
+getGuardCoordinates grid = head [i | (i, e) <- assocs grid, e == Guard]
 
 direction :: Char -> (Int, Int)
 direction '^' = (0, -1)
@@ -34,67 +36,51 @@ direction '>' = (1, 0)
 direction 'v' = (0, 1)
 direction '<' = (-1, 0)
 
-getCell :: [[Cell]] -> (Int, Int) -> Cell
-getCell grid (x, y) = grid !! y !! x
-
 turnRight :: Char -> Char
 turnRight '^' = '>'
 turnRight '>' = 'v'
 turnRight 'v' = '<'
 turnRight '<' = '^'
 
-moves :: [[Cell]] -> (Int, Int) -> Char -> [(Int, Int)]
-moves grid pos@(x, y) guard
-  | x < 0 || y < 0 || x >= maxX || y >= maxY = []
-  | x' < 0 || y' < 0 || x' >= maxX || y' >= maxY = [(x, y)]
-  | newGuardCell == Obstruction = moves grid pos (turnRight guard)
-  | otherwise = pos : moves grid newPos guard
-  where
-    maxX = length (head grid)
-    maxY = length grid
-    (dirX, dirY) = direction guard
-    newPos@(x', y') = (x + dirX, y + dirY)
-    newGuardCell = getCell grid newPos
-
-runMovesVariation :: ([[Cell]] -> (Int, Int) -> Char -> a) -> String ->  a
-runMovesVariation f input = f grid (x, y) (input !! index)
+partA :: String -> Int
+partA input = length (nub (moves grid guardPos guard))
   where
     grid = procInput input
-    (x, y) = getGuardCoordinates grid
-    index = x + y * (1 + length (head (lines input)))
+    guardPos@(x, y) = getGuardCoordinates grid
+    index = x + y * (2 + fst (snd (bounds grid)))
+    guard = input !! index
 
-nMoves :: [(Int, Int)] -> Int
-nMoves out = length (nub  out)
+moves :: Grid -> (Int, Int) -> Char -> [(Int, Int)]
+moves grid pos@(x, y) guard
+  | x < 0 || y < 0 || x > maxX || y > maxY = []
+  | x' < 0 || y' < 0 || x' > maxX || y' > maxY = [(x, y)]
+  | grid ! newPos == Obstruction = moves grid pos (turnRight guard)
+  | otherwise = pos : moves grid newPos guard
+  where
+    (maxX, maxY) = snd (bounds grid)
+    (dirX, dirY) = direction guard
+    newPos@(x', y') = (x + dirX, y + dirY)
 
 partB :: String -> Int
-partB = length . filter (runMovesVariation loops) . getVariations
-
-getVariations :: String -> [String]
-getVariations [] = []
-getVariations ('.' : xs) = ('#' : xs) : map ('.' :) (getVariations xs)
-getVariations (x : xs) = map (x :) (getVariations xs)
-
-obstructionsSet :: [[Cell]] -> Set (Int, Int)
-obstructionsSet grid = go grid 0 0
+partB input = length (filter (loops grid guardPos guard) coordinatesList)
   where
-    go :: [[Cell]] -> Int -> Int -> Set (Int, Int)
-    go [] _ _ = empty
-    go ([] : xss) _ y = go xss 0 (y + 1)
-    go ((Obstruction : xs) : xss) x y = (x, y) `insert` go (xs : xss) (x + 1) y
-    go ((_ : xs) : xss) x y = go (xs : xss) (x + 1) y
+    grid = procInput input
+    guardPos@(x, y) = getGuardCoordinates grid
+    index = x + y * (2 + fst (snd (bounds grid)))
+    guard = input !! index
+    (_ : coordinatesList) = nub (moves grid guardPos guard)
 
-loops :: [[Cell]] -> (Int, Int) -> Char -> Bool
-loops grid startPos startGuard = go startPos startGuard empty
+loops :: Grid -> (Int, Int) -> Char -> (Int, Int) -> Bool
+loops grid startPos startGuard newObstruction = go startPos startGuard empty
   where
-    maxX = length (head grid)
-    maxY = length grid
-    obstructions = obstructionsSet grid
+    (maxX, maxY) = snd (bounds grid)
     go :: (Int, Int) -> Char -> Set (Char, Int, Int) -> Bool
     go pos@(x, y) guard history
-      | x < 0 || y < 0 || x >= maxX || y >= maxY = False
-      | x' < 0 || y' < 0 || x' >= maxX || y' >= maxY = False
+      | x < 0 || y < 0 || x > maxX || y > maxY = False
+      | x' < 0 || y' < 0 || x' > maxX || y' > maxY = False
       | (guard, x, y) `member` history = True
-      | newPos `member` obstructions = go pos (turnRight guard) ((guard, x, y) `insert` history)
+      | grid ! newPos == Obstruction || newPos == newObstruction
+        = go pos (turnRight guard) ((guard, x, y) `insert` history)
       | otherwise = go newPos guard history
       where
         (dirX, dirY) = direction guard
