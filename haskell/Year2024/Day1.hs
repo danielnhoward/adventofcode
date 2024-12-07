@@ -2,8 +2,8 @@ module Year2024.Day1 where
 
 import Utils.Read (readInt)
 import Utils.Run (run)
-
 import Data.List (sort)
+
 import Control.Functor.HT (mapFst)
 
 procInput :: String -> ([Int], [Int])
