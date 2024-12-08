@@ -10,9 +10,13 @@ module Utils.List (
   removeFirst,
   insertValue,
   getIndex,
+  withIndex,
+  withCoordinates,
+  withCoordinatesFromInput,
 ) where
 
 import Data.List (transpose)
+import Data.Tuple (swap)
 
 compareList :: (Int -> Int -> Bool) -> [Int] -> Bool
 compareList _ [] = True
@@ -66,3 +70,16 @@ getIndex f = go 0
     go n (x : xs)
       | f x = n
       | otherwise = go (n + 1) xs
+
+withIndex :: [a] -> [(Int, a)]
+withIndex = zip [0..]
+
+withCoordinates :: Int -> [a] -> [((Int, Int), a)]
+withCoordinates rowLength = map procValue . withIndex
+  where procValue (i, x) = (swap (quotRem i rowLength), x)
+
+withCoordinatesFromInput :: String -> [((Int, Int), Char)]
+withCoordinatesFromInput input = withCoordinates rowLength strippedInput
+  where
+    rowLength = length (head (lines input))
+    strippedInput = [x | x <- input, x /= '\n']

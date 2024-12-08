@@ -1,6 +1,6 @@
 module Year2024.Day6 where
 
-import Utils.List (getIndex)
+import Utils.List (withIndex)
 import Utils.Run (run)
 
 import Data.List (nub)
@@ -12,9 +12,6 @@ data Cell = Empty | Obstruction | Guard deriving (Eq, Show)
 type Coordinate = (Int, Int)
 type Grid = Array Coordinate Cell
 type State = (Coordinate, Char)
-
-withIndex :: [a] -> [(Int, a)]
-withIndex = zip [0..]
 
 procInput :: String -> Grid
 procInput s = array ((0,0), (length (head ls) - 1, length ls - 1))
